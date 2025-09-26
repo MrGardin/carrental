@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все автомобили - CarRental</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #2c5aa0, #2a9d8f);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .car-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e0e0e0;
+        }
+        .car-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .tech-specs .badge {
+            font-size: 0.7em;
+            margin-bottom: 2px;
+        }
+        .car-specs small {
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">🚗 CarRental</a>
+
+        <div class="navbar-nav me-auto">
+            <a class="nav-link" href="/">Главная</a>
+            <a class="nav-link" href="/cars">Автомобили</a>
+
+            <!-- Кнопка для менеджера/админа -->
+            <div th:if="${currentUser != null}">
+                <a th:if="${currentUser.manager or currentUser.admin}"
+                   class="nav-link" href="/admin/cars">
+                    <i class="bi bi-plus-circle"></i> Управление авто
+                </a>
+            </div>
+        </div>
+
+        <div class="navbar-nav">
+            <!-- Если пользователь не авторизован -->
+            <div th:unless="${currentUser != null}" class="d-flex">
+                <a class="nav-link" href="/login">Войти</a>
+                <a class="nav-link" href="/register">Регистрация</a>
+            </div>
+
+            <!-- Если пользователь авторизован -->
+            <div th:if="${currentUser != null}" class="d-flex align-items-center">
+                <span class="navbar-text me-3">
+                    <i class="bi bi-person"></i>
+                    <span th:text="${currentUser.fullName}"></span>
+                    <small class="text-muted ms-2" th:text="${currentUser.role}"></small>
+                </span>
+                <a class="btn btn-outline-light btn-sm" href="/logout">Выйти</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Заголовок страницы -->
+<div class="page-header">
+    <div class="container">
+        <h1 class="display-5 fw-bold">Все автомобили</h1>
+        <p class="lead mb-0">Полный каталог доступных для аренды автомобилей</p>
+    </div>
+</div>
+
+<!-- Секция с автомобилями -->
+<div class="container">
+    <div class="row">
+        <!-- Карточки ВСЕХ автомобилей -->
+        <div th:each="car : ${cars}" class="col-lg-4 col-md-6 mb-4">
+            <div class="card car-card h-100">
+                <!-- Изображение автомобиля -->
+                <div th:if="${car.imageUrl}" class="card-img-container" style="height: 200px; overflow: hidden;">
+                    <img th:src="@{${car.imageUrl}}" class="card-img-top"
+                         style="height: 100%; object-fit: cover;"
+                         th:alt="${car.brand + ' ' + car.model}"
+                         onerror="this.src='/images/cars/default-car.jpg'">
+                </div>
+                <div th:unless="${car.imageUrl}" class="card-img-container" style="height: 200px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                    <span class="text-muted">🚗 Нет изображения</span>
+                </div>
+
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title" th:text="${car.brand + ' ' + car.model}">Автомобиль</h5>
+
+                    <!-- Основные характеристики -->
+                    <div class="car-specs mb-2">
+                        <small class="text-muted d-block" th:text="${car.year} + ' год'">Год</small>
+                        <small class="text-muted d-block" th:text="${car.color}">Цвет</small>
+                        <small class="text-muted d-block" th:text="${car.bodyType} ?: 'Тип кузова не указан'">Тип кузова</small>
+                    </div>
+
+                    <!-- Технические характеристики -->
+                    <div class="tech-specs mb-3">
+                        <span class="badge bg-light text-dark me-1" th:if="${car.fuelType}" th:text="${car.fuelType}">Топливо</span>
+                        <span class="badge bg-light text-dark me-1" th:if="${car.transmission}" th:text="${car.transmission}">КПП</span>
+                        <span class="badge bg-light text-dark" th:if="${car.engineCapacity}" th:text="${car.engineCapacity} + 'л'">Объем</span>
+                        <span class="badge bg-light text-dark" th:if="${car.horsePower}" th:text="${car.horsePower} + ' л.с.'">Мощность</span>
+                    </div>
+
+                    <!-- Статус -->
+                    <div class="mb-2">
+                        <strong>Статус:</strong>
+                        <span th:if="${car.available}" class="text-success">Доступен</span>
+                        <span th:unless="${car.available}" class="text-danger">Занят</span>
+                    </div>
+
+                    <!-- Описание -->
+                    <p class="card-text flex-grow-1" th:if="${car.description}"
+                       style="font-size: 0.9em; color: #666;" th:text="${car.description}">Описание</p>
+
+                    <!-- Цена и кнопка -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-success mb-0" th:text="${car.pricePerDay} + ' ₽/день'">Цена</span>
+
+                            <!-- Для клиентов -->
+                            <div th:if="${currentUser != null and currentUser.client}">
+                                <button class="btn btn-primary"
+                                        th:onclick="|rentCar(${car.id})|"
+                                        th:disabled="${not car.available}">
+                                    <span th:if="${car.available}">Арендовать</span>
+                                    <span th:unless="${car.available}">Недоступен</span>
+                                </button>
+                            </div>
+
+                            <!-- Для менеджеров и админов -->
+                            <div th:if="${currentUser != null and (currentUser.manager or currentUser.admin)}">
+                                <button class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-pencil"></i> Редактировать
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm ms-1">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </div>
+
+                            <!-- Для неавторизованных -->
+                            <div th:unless="${currentUser != null}">
+                                <a href="/login" class="btn btn-outline-primary">Войдите для аренды</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript для аренды (ОБЯЗАТЕЛЬНО ДОБАВИТЬ!) -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function rentCar(carId) {
+        if (confirm('Вы уверены, что хотите арендовать этот автомобиль?')) {
+            fetch('/api/cars/' + carId + '/rent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Автомобиль успешно арендован!');
+                    location.reload();
+                } else {
+                    response.text().then(text => alert('Ошибка: ' + text));
+                }
+            })
+            .catch(error => alert('Ошибка сети: ' + error));
+        }
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

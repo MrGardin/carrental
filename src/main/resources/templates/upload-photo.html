@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузка фото - CarRental</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">🚗 CarRental</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/admin/cars">← Назад к управлению</a>
+        </div>
+        <div class="navbar-nav">
+            <span class="navbar-text me-3">
+                <i class="bi bi-person"></i>
+                <span th:text="${currentUser.fullName}"></span>
+            </span>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        <i class="bi bi-image"></i> Загрузка фото
+                    </h4>
+                    <p class="card-text">для <strong th:text="${car.brand + ' ' + car.model}"></strong></p>
+
+                    <div th:if="${error}" class="alert alert-danger">
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <form method="post" th:action="@{/admin/cars/upload-photo/{id}(id=${car.id})}"
+                          enctype="multipart/form-data">
+
+                        <div class="mb-3">
+                            <label class="form-label">Выберите файл изображения</label>
+                            <input type="file" class="form-control" name="imageFile" accept="image/*" required>
+                            <div class="form-text">Поддерживаемые форматы: JPG, PNG, JPEG. Максимальный размер: 10MB</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-upload"></i> Загрузить фото
+                            </button>
+                            <a th:href="@{/admin/cars}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
