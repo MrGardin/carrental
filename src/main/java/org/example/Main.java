@@ -9,7 +9,7 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.Wrapper;
 
 import jakarta.servlet.MultipartConfigElement;
-
+//Изменено
 public class Main {
     public static void main(String[] args) throws Exception {
         // Создаем веб-контекст Spring
