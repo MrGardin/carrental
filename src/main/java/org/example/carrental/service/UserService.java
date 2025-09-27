@@ -43,9 +43,9 @@ public class UserService {
             throw new RuntimeException("Пользователь с email " + email + " уже существует!");
         }
 
-        // 2. СОЗДАНИЕ МЕНЕДЖЕРА С ФЛАГОМ "НА ПОДТВЕРЖДЕНИИ"
+        // 2. ФИКС: Используем правильный конструктор для менеджера
         User manager = new User(email, password, fullName, phone);
-        // manager.setApproved(false); // добавим поле approved в User
+        manager.setRole(UserRole.MANAGER); // Явно устанавливаем роль
         return userRepository.save(manager);
     }
 
@@ -67,7 +67,10 @@ public class UserService {
         // manager.setApproved(true);
         return userRepository.save(manager);
     }
-
+    // В UserService добавить:
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
     // АУТЕНТИФИКАЦИЯ (простая проверка)
     public User authenticate(String email, String password) {
         Optional<User> userOpt = userRepository.findByEmail(email);
@@ -136,8 +139,8 @@ public class UserService {
 
             // Менеджер
             User manager = new User("manager@carrental.ru", "manager123", "Иван Менеджеров", UserRole.MANAGER);
+            manager.setApproved(true); // ОДОБРЯЕМ МЕНЕДЖЕРА
             userRepository.save(manager);
-
             // Клиент
             User client = new User("client@carrental.ru", "client123", "Петр Клиентов",
                     "+79991234567", "AB12345678");
@@ -145,5 +148,14 @@ public class UserService {
 
             System.out.println("Созданы тестовые пользователи");
         }
+    }
+    // Добавь этот геттер в UserService
+    public UserRepository getUserRepository() {
+        return userRepository;
+    }
+    // В UserService.java добавляем:
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + email));
     }
 }

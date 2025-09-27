@@ -13,8 +13,8 @@
         <div class="navbar-nav">
             <a class="nav-link" href="/">Главная</a>
             <a class="nav-link" href="/cars">Автомобили</a>
-            <a class="nav-link" href="/admin/cars">Управление</a>
-            <a class="nav-link active" href="/admin/cars/add">Добавить авто</a>
+            <a class="nav-link" href="/manager/cars">Управление</a>
+            <a class="nav-link active" href="/manager/cars/add">Добавить авто</a>
         </div>
     </div>
 </nav>
@@ -29,7 +29,7 @@
             </div>
 
             <!-- ВАЖНО: ДОБАВЛЕН enctype="multipart/form-data" -->
-            <form method="post" th:action="@{/admin/cars/add}" th:object="${car}"
+            <form method="post" th:action="@{/manager/cars/add}" th:object="${car}"
                   enctype="multipart/form-data" accept-charset="UTF-8">
 
                 <!-- Основные поля -->
@@ -111,7 +111,7 @@
 
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">Добавить автомобиль</button>
-                    <a href="/admin/cars" class="btn btn-secondary">Отмена</a>
+                    <a href="/manager/cars" class="btn btn-secondary">Отмена</a>
                 </div>
             </form>
         </div>

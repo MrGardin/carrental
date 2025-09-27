@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель управления менеджера</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">CarRental</a>
+
+        <div class="navbar-nav me-auto">
+            <a class="nav-link" href="/">Главная</a>
+            <a class="nav-link" href="/cars">Автомобили</a>
+
+            <!-- Меню для менеджера -->
+            <div class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">
+                    Управление
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item active" href="/manager/dashboard">Дашборд</a></li>
+                    <li><a class="dropdown-item" href="/manager/cars">Мои автомобили</a></li>
+                    <li><a class="dropdown-item" href="/manager/rentals">Управление арендами</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="navbar-nav">
+            <span class="navbar-text me-3" th:text="${currentUser.fullName}"></span>
+            <a class="btn btn-outline-secondary btn-sm" href="/logout">Выйти</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- Заголовок -->
+    <h1>Панель управления менеджера</h1>
+    <p class="text-muted">Обзор статистики и управление арендами</p>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${pendingCount}">0</h5>
+                    <p class="card-text">Ожидают подтверждения</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${activeCount}">0</h5>
+                    <p class="card-text">Активные аренды</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${cars.size()}">0</h5>
+                    <p class="card-text">Мои автомобили</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Аренды требующие внимания -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Аренды требующие внимания</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${pendingRentals.empty}" class="text-center text-muted">
+                Нет аренд требующих внимания
+            </div>
+            <div th:each="rental : ${pendingRentals}" class="border p-3 mb-2 rounded">
+                <h6 th:text="${rental.car.brand + ' ' + rental.car.model}"></h6>
+                <p class="mb-1">Клиент: <span th:text="${rental.user.fullName}"></span></p>
+                <p class="mb-1">Даты: <span th:text="${#temporals.format(rental.startDate, 'dd.MM.yyyy HH:mm')}"></span> -
+                    <span th:text="${#temporals.format(rental.endDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+                <a th:href="@{/manager/rentals/{id}(id=${rental.id})}" class="btn btn-primary btn-sm">Обработать</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Активные аренды -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Активные аренды</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${activeRentals.empty}" class="text-center text-muted">
+                Нет активных аренд
+            </div>
+            <div th:each="rental : ${activeRentals}" class="border p-3 mb-2 rounded">
+                <h6 th:text="${rental.car.brand + ' ' + rental.car.model}"></h6>
+                <p class="mb-1">Клиент: <span th:text="${rental.user.fullName}"></span></p>
+                <p class="mb-1">Статус: <span th:text="${rental.status}"></span></p>
+                <a th:href="@{/manager/rentals/{id}(id=${rental.id})}" class="btn btn-outline-primary btn-sm">Детали</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

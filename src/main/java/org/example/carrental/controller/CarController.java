@@ -1,11 +1,15 @@
 package org.example.carrental.controller;
 
+import jakarta.servlet.http.HttpSession;
+import org.example.carrental.dto.CarFilterDTO;
 import org.example.carrental.entity.Car;
 import org.example.carrental.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cars")
@@ -58,5 +62,26 @@ public class CarController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+    // Добавить в CarController.java
+    @GetMapping("/filter")
+    public List<Car> getCarsWithFilters(@ModelAttribute CarFilterDTO filters) {
+        return carService.getCarsWithFilters(filters);
+    }
+
+    // Для веб-версии (Thymeleaf)
+    @GetMapping("/cars/filter")
+    public String getFilteredCars(@ModelAttribute CarFilterDTO filters,
+                                  HttpSession session,
+                                  Model model) {
+        List<Car> filteredCars = carService.getCarsWithFilters(filters);
+        Map<String, List<String>> filterOptions = carService.getFilterOptions();
+
+        model.addAttribute("cars", filteredCars);
+        model.addAttribute("filterOptions", filterOptions);
+        model.addAttribute("filters", filters);
+        model.addAttribute("currentUser", session.getAttribute("user"));
+
+        return "cars"; // тот же шаблон, но с фильтрами
     }
 }

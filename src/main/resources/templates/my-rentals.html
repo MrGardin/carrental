@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои аренды - CarRental</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .rentals-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .rental-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .rental-card:hover {
+            border-color: #0d6efd;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .status-pending { border-left: 5px solid #ffc107; }
+        .status-confirmed { border-left: 5px solid #198754; }
+        .status-active { border-left: 5px solid #0d6efd; }
+        .status-completed { border-left: 5px solid #6c757d; }
+        .status-cancelled { border-left: 5px solid #dc3545; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">🚗 CarRental</a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="/cars">Все автомобили</a>
+            <a class="nav-link active" href="/rentals/my-rentals">Мои аренды</a>
+        </div>
+    </div>
+</nav>
+
+<div class="rentals-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-list-ul"></i> Мои аренды</h1>
+        <a href="/cars" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Новая аренда
+        </a>
+    </div>
+
+    <!-- Сообщение об ошибке -->
+    <div th:if="${error}" class="alert alert-danger">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- Список аренд -->
+    <div th:if="${rentals != null and !rentals.empty}">
+        <div th:each="rental : ${rentals}"
+             class="rental-card status-${rental.status.name().toLowerCase()}">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-2 text-center">
+                        <img th:src="${rental.car.imageUrl ?: '/images/cars/default-car.jpg'}"
+                             class="img-fluid rounded"
+                             style="max-height: 80px; object-fit: cover;"
+                             th:alt="${rental.car.brand + ' ' + rental.car.model}">
+                    </div>
+                    <div class="col-md-3">
+                        <h5 th:text="${rental.car.brand + ' ' + rental.car.model}"></h5>
+                        <small class="text-muted" th:text="${rental.car.year + ' год'}"></small>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Даты:</strong><br>
+                        <small th:text="${#temporals.format(rental.startDate, 'dd.MM.yy')} + ' - ' + ${#temporals.format(rental.endDate, 'dd.MM.yy')}"></small>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Стоимость:</strong><br>
+                        <span class="text-success" th:text="${rental.totalPrice} + ' ₽'"></span>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Статус:</strong><br>
+                        <span th:classappend="'badge bg-' + ${{
+                                'PENDING': 'warning',
+                                'CONFIRMED': 'success',
+                                'ACTIVE': 'primary',
+                                'COMPLETED': 'secondary',
+                                'CANCELLED': 'danger'
+                            }[rental.status.name()]}">
+                                <th:block th:switch="${rental.status}">
+                                    <span th:case="PENDING">⏳ Ожидание</span>
+                                    <span th:case="CONFIRMED">✅ Подтверждено</span>
+                                    <span th:case="ACTIVE">🚗 В процессе</span>
+                                    <span th:case="COMPLETED">📋 Завершено</span>
+                                    <span th:case="CANCELLED">❌ Отменено</span>
+                                </th:block>
+                            </span>
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <a th:href="@{/rentals/confirmation/{id}(id=${rental.id})}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нет аренд -->
+    <div th:if="${rentals == null or rentals.empty}" class="text-center py-5">
+        <i class="bi bi-car-front" style="font-size: 4rem; color: #6c757d;"></i>
+        <h3 class="text-muted mt-3">У вас пока нет аренд</h3>
+        <p class="text-muted">Начните с выбора автомобиля для аренды</p>
+        <a href="/cars" class="btn btn-primary btn-lg">
+            <i class="bi bi-search"></i> Найти автомобиль
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

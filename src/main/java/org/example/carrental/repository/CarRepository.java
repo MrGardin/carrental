@@ -38,7 +38,25 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     // Кастомный запрос: машины определенного менеджера
     @Query("SELECT c FROM Car c WHERE c.manager.id = :managerId AND c.available = true")
     List<Car> findAvailableCarsByManager(@Param("managerId") Long managerId);
-
+    @Query("SELECT c FROM Car c WHERE " +
+            "(:brand IS NULL OR :brand = '' OR c.brand LIKE %:brand%) AND " +
+            "(:minPrice IS NULL OR c.pricePerDay >= :minPrice) AND " +
+            "(:maxPrice IS NULL OR c.pricePerDay <= :maxPrice) AND " +
+            "(:bodyType IS NULL OR :bodyType = '' OR c.bodyType = :bodyType) AND " +
+            "(:fuelType IS NULL OR :fuelType = '' OR c.fuelType = :fuelType) AND " +
+            "(:transmission IS NULL OR :transmission = '' OR c.transmission = :transmission) AND " +
+            "(:minYear IS NULL OR c.year >= :minYear) AND " +
+            "(:maxYear IS NULL OR c.year <= :maxYear) AND " +
+            "(:available IS NULL OR c.available = :available)")
+    List<Car> findWithFilters(@Param("brand") String brand,
+                              @Param("minPrice") Double minPrice,
+                              @Param("maxPrice") Double maxPrice,
+                              @Param("bodyType") String bodyType,
+                              @Param("fuelType") String fuelType,
+                              @Param("transmission") String transmission,
+                              @Param("minYear") Integer minYear,
+                              @Param("maxYear") Integer maxYear,
+                              @Param("available") Boolean available);
     // Кастомный запрос: поиск по типу кузова и топливу
     @Query("SELECT c FROM Car c WHERE c.bodyType = :bodyType AND c.fuelType = :fuelType AND c.available = true")
     List<Car> findAvailableCarsByBodyTypeAndFuelType(@Param("bodyType") String bodyType,

@@ -5,8 +5,10 @@ import org.example.carrental.entity.User;
 import org.example.carrental.repository.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
+import org.example.carrental.dto.CarFilterDTO;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CarService {
@@ -41,31 +43,7 @@ public class CarService {
 
         return carRepository.save(car);
     }
-/*
-    public Car rentCar(Long carId, User client) {
-        // 1. КЛИЕНТЫ НЕ МОГУТ АРЕНДОВАТЬ (бизнес-правило)
-        if (!client.isClient()) {
-            throw new RuntimeException("Только клиенты могут арендовать автомобили!");
-        }
 
-        Car car = getCarById(carId);
-
-        // 2. ПРОВЕРКА ДОСТУПНОСТИ (бизнес-правило)
-        if (!car.getAvailable()) {
-            throw new RuntimeException("Автомобиль уже арендован!");
-        }
-
-        // 3. ВОЗРАСТНЫЕ ОГРАНИЧЕНИЯ (бизнес-правило)
-        if (car.getYear() != null && car.getYear() < 2010) {
-            throw new RuntimeException("Нельзя арендовать автомобили старше 2010 года!");
-        }
-
-        // 4. ИЗМЕНЕНИЕ СТАТУСА (бизнес-логика)
-        car.setAvailable(false);
-        return carRepository.save(car);
-    }
-
- */
 
     // Метод для поиска автомобиля по ID
     public Car getCarById(Long id) {
@@ -127,5 +105,70 @@ public class CarService {
         Car car = getCarById(carId);
         car.setImageUrl(imageUrl);
         return carRepository.save(car);
+    }
+
+    // Метод для получения уникальных значений для выпадающих списков
+    public Map<String, List<String>> getFilterOptions() {
+        Map<String, List<String>> options = new HashMap<>();
+
+        // Получаем уникальные бренды
+        List<String> brands = carRepository.findAll()
+                .stream()
+                .map(Car::getBrand)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Аналогично для других полей
+        List<String> bodyTypes = carRepository.findAll()
+                .stream()
+                .map(Car::getBodyType)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<String> fuelTypes = carRepository.findAll()
+                .stream()
+                .map(Car::getFuelType)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<String> transmissions = carRepository.findAll()
+                .stream()
+                .map(Car::getTransmission)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        options.put("brands", brands);
+        options.put("bodyTypes", bodyTypes);
+        options.put("fuelTypes", fuelTypes);
+        options.put("transmissions", transmissions);
+
+        return options;
+    }
+    public List<Car> getCarsWithFilters(CarFilterDTO filters) {
+        // Нормализуем параметры - пустые строки превращаем в null
+        String brand = normalizeFilter(filters.getBrand());
+        String bodyType = normalizeFilter(filters.getBodyType());
+        String fuelType = normalizeFilter(filters.getFuelType());
+        String transmission = normalizeFilter(filters.getTransmission());
+
+        return carRepository.findWithFilters(
+                brand,
+                filters.getMinPrice(),
+                filters.getMaxPrice(),
+                bodyType,
+                fuelType,
+                transmission,
+                filters.getMinYear(),
+                filters.getMaxYear(),
+                filters.getAvailable()
+        );
+    }
+
+    // Вспомогательный метод для нормализации фильтров
+    private String normalizeFilter(String value) {
+        return (value == null || value.trim().isEmpty()) ? null : value.trim();
     }
 }
